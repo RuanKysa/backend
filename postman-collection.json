@@ -1,0 +1,259 @@
+{
+  "info": {
+    "name": "API Matrícula",
+    "description": "Coleção de endpoints para a API de Matrícula",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Criar Matrícula",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nomeCompleto\": \"João da Silva\",\n  \"dataNascimento\": \"2010-05-15\",\n  \"turnoSCFV\": \"manha\",\n  \"naturalidade\": \"São Paulo\",\n  \"municipio\": \"São Paulo\",\n  \"uf\": \"SP\",\n  \"pais\": \"Brasil\",\n  \"rg\": \"123456789\",\n  \"rgUF\": \"SP\",\n  \"dataExpedicao\": \"2020-01-15\",\n  \"cpf\": \"12345678901\",\n  \"cadUnicoAluno\": \"12345678901\",\n  \"cadUnicoResponsavel\": \"98765432100\",\n  \"etnia\": \"parda\",\n  \"programaSocial\": \"bolsa_familia\",\n  \"quantasPessoasResidencia\": 4,\n  \"nomeMae\": \"Maria da Silva\",\n  \"rgMae\": \"987654321\",\n  \"ufMae\": \"SP\",\n  \"nomePai\": \"José da Silva\",\n  \"rgPai\": \"456789123\",\n  \"ufPai\": \"SP\",\n  \"nomeResponsavel\": \"Maria da Silva\",\n  \"parentesco\": \"Mãe\",\n  \"endereco\": \"Rua das Flores\",\n  \"numeroEndereco\": \"123\",\n  \"complemento\": \"Apto 45\",\n  \"bairro\": \"Centro\",\n  \"postoDeSaude\": \"UBS Centro\",\n  \"telefone\": \"(11) 98765-4321\",\n  \"telefoneOutro\": \"(11) 3456-7890\",\n  \"escola\": \"Escola Municipal João XXIII\",\n  \"serie\": \"5º Ano\",\n  \"turno\": \"manha\",\n  \"possuiDeficiencia\": false,\n  \"tipoDeficiencia\": \"nao_possui\",\n  \"observacoes\": \"Aluno muito dedicado\",\n  \"utilizaTransporte\": true,\n  \"localEmbarque\": \"Praça Central\",\n  \"localDesembarque\": \"Escola\",\n  \"almoco\": true,\n  \"encaminhadoPor\": \"Assistente Social Maria\",\n  \"dataEncaminhamento\": \"2024-01-10\",\n  \"status\": \"pendente\",\n  \"matriculaAssinada\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas"]
+        }
+      }
+    },
+    {
+      "name": "Listar Todas as Matrículas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas"]
+        }
+      }
+    },
+    {
+      "name": "Buscar Matrícula por ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas", ":id"],
+          "variable": [
+            {
+              "key": "id",
+              "value": "seu-id-aqui"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar com Filtros",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas?busca=João&status=pendente&dataInicio=2024-01-01&dataFim=2024-12-31",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas"],
+          "query": [
+            {
+              "key": "busca",
+              "value": "João"
+            },
+            {
+              "key": "status",
+              "value": "pendente"
+            },
+            {
+              "key": "dataInicio",
+              "value": "2024-01-01"
+            },
+            {
+              "key": "dataFim",
+              "value": "2024-12-31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atualizar Matrícula",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nomeCompleto\": \"João da Silva Santos\",\n  \"dataNascimento\": \"2010-05-15\",\n  \"turnoSCFV\": \"tarde\",\n  \"possuiDeficiencia\": false,\n  \"utilizaTransporte\": true,\n  \"almoco\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas", ":id"],
+          "variable": [
+            {
+              "key": "id",
+              "value": "seu-id-aqui"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Deletar Matrícula",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas", ":id"],
+          "variable": [
+            {
+              "key": "id",
+              "value": "seu-id-aqui"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar por Nome",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas/buscar/nome?nome=João",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas", "buscar", "nome"],
+          "query": [
+            {
+              "key": "nome",
+              "value": "João"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar por CPF",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas/buscar/cpf?cpf=12345678901",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas", "buscar", "cpf"],
+          "query": [
+            {
+              "key": "cpf",
+              "value": "12345678901"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atualizar Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"aprovada\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas/:id/status",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas", ":id", "status"],
+          "variable": [
+            {
+              "key": "id",
+              "value": "seu-id-aqui"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Assinar Matrícula",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"assinatura\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas/:id/assinatura",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas", ":id", "assinatura"],
+          "variable": [
+            {
+              "key": "id",
+              "value": "seu-id-aqui"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Estatísticas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/matriculas/stats",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "matriculas", "stats"]
+        }
+      }
+    }
+  ]
+}

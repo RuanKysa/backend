@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "Sistema de Chamada - Oficinas",
+    "description": "Coleção de endpoints para gerenciar chamada/presença de alunos nas oficinas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Chamada",
+      "item": [
+        {
+          "name": "1. Listar Alunos para Chamada (Hoje)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chamadas/oficinas/{{oficinaId}}/alunos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chamadas", "oficinas", "{{oficinaId}}", "alunos"]
+            },
+            "description": "Lista todos os alunos confirmados de uma oficina para fazer a chamada do dia. Se já houver chamada registrada para hoje, mostra o status de cada aluno."
+          }
+        },
+        {
+          "name": "2. Listar Alunos com Chamada de Data Específica",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chamadas/oficinas/{{oficinaId}}/alunos?data=2026-04-26",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chamadas", "oficinas", "{{oficinaId}}", "alunos"],
+              "query": [
+                {
+                  "key": "data",
+                  "value": "2026-04-26",
+                  "description": "Data da aula (formato: YYYY-MM-DD)"
+                }
+              ]
+            },
+            "description": "Lista alunos mostrando se já foi feita a chamada em uma data específica."
+          }
+        },
+        {
+          "name": "3. Registrar Chamada (Todos Presentes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAula\": \"2026-04-26\",\n  \"registradoPor\": \"Prof. Maria Santos\",\n  \"presencas\": [\n    {\n      \"alunoOficinaId\": \"aluno-uuid-1\",\n      \"status\": \"PRESENTE\"\n    },\n    {\n      \"alunoOficinaId\": \"aluno-uuid-2\",\n      \"status\": \"PRESENTE\"\n    },\n    {\n      \"alunoOficinaId\": \"aluno-uuid-3\",\n      \"status\": \"PRESENTE\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/chamadas/oficinas/{{oficinaId}}/registrar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chamadas", "oficinas", "{{oficinaId}}", "registrar"]
+            },
+            "description": "Registra a presença de todos os alunos. Status disponíveis: PRESENTE, FALTA, JUSTIFICADA"
+          }
+        },
+        {
+          "name": "4. Registrar Chamada (Com Faltas)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAula\": \"2026-04-26\",\n  \"registradoPor\": \"Prof. João Silva\",\n  \"presencas\": [\n    {\n      \"alunoOficinaId\": \"aluno-uuid-1\",\n      \"status\": \"PRESENTE\"\n    },\n    {\n      \"alunoOficinaId\": \"aluno-uuid-2\",\n      \"status\": \"FALTA\",\n      \"observacao\": \"Faltou sem avisar\"\n    },\n    {\n      \"alunoOficinaId\": \"aluno-uuid-3\",\n      \"status\": \"JUSTIFICADA\",\n      \"observacao\": \"Atestado médico apresentado\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/chamadas/oficinas/{{oficinaId}}/registrar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chamadas", "oficinas", "{{oficinaId}}", "registrar"]
+            },
+            "description": "Registra presença com diferentes status e observações"
+          }
+        },
+        {
+          "name": "5. Atualizar Chamada Existente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAula\": \"2026-04-26\",\n  \"registradoPor\": \"Prof. Maria Santos\",\n  \"presencas\": [\n    {\n      \"alunoOficinaId\": \"aluno-uuid-2\",\n      \"status\": \"PRESENTE\",\n      \"observacao\": \"Chegou atrasado mas participou da aula\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/chamadas/oficinas/{{oficinaId}}/registrar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chamadas", "oficinas", "{{oficinaId}}", "registrar"]
+            },
+            "description": "Atualiza o registro de presença de um aluno. Se já existir registro para aquele aluno naquela data, será atualizado."
+          }
+        },
+        {
+          "name": "6. Histórico de Chamadas da Oficina",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chamadas/oficinas/{{oficinaId}}/historico",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chamadas", "oficinas", "{{oficinaId}}", "historico"]
+            },
+            "description": "Retorna todo o histórico de presenças da oficina, ordenado por data (mais recente primeiro)"
+          }
+        },
+        {
+          "name": "7. Histórico de Presença do Aluno",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chamadas/alunos/{{alunoOficinaId}}/historico",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chamadas", "alunos", "{{alunoOficinaId}}", "historico"]
+            },
+            "description": "Retorna todo o histórico de presença de um aluno específico"
+          }
+        },
+        {
+          "name": "8. Estatísticas de Presença do Aluno",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chamadas/alunos/{{alunoOficinaId}}/estatisticas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chamadas", "alunos", "{{alunoOficinaId}}", "estatisticas"]
+            },
+            "description": "Retorna estatísticas de presença e falta do aluno (total de presenças, faltas e total de aulas)"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "oficinaId",
+      "value": "seu-oficina-uuid-aqui",
+      "type": "string"
+    },
+    {
+      "key": "alunoOficinaId",
+      "value": "seu-aluno-uuid-aqui",
+      "type": "string"
+    }
+  ]
+}
