@@ -24,6 +24,8 @@ public class OficinaService {
     private final ResponsavelRepository responsavelRepository;
     private final AgentesCidadaniaRepository agentesCidadaniaRepository;
     private final AlunoOficinaRepository alunoOficinaRepository;
+    private final ParticipanteAvulsoRepository participanteAvulsoRepository;
+    private final HorarioRepository horarioRepository;
     private final OficinaMapper oficinaMapper;
     
     // ========== OFICINA ==========
@@ -431,22 +433,34 @@ public class OficinaService {
     
     @Transactional
     public AlunoOficinaDTO inscreverAluno(AlunoOficinaDTO dto) {
+        if (dto.getMatriculaId() == null || dto.getMatriculaId().isBlank()) {
+            dto.setMatriculaId(null);
+            dto.setOrigem("avulso");
+            vincularParticipanteAvulso(dto, false);
+        } else if (dto.getOrigem() == null) {
+            dto.setOrigem("matricula");
+        }
         // Verificar se a oficina existe
         Oficina oficina = oficinaRepository.findById(dto.getOficinaId())
             .orElseThrow(() -> new EntityNotFoundException("Oficina não encontrada"));
         
-        // Verificar se há vagas disponíveis
-        if (oficina.getVagasDisponiveis() <= 0) {
-            throw new IllegalStateException("Não há vagas disponíveis nesta oficina");
+        Horario horario = horarioRepository.findByIdForUpdate(dto.getHorarioId())
+            .orElseThrow(() -> new EntityNotFoundException("Horário não encontrado"));
+        boolean horarioDaOficina = oficina.getHorarios().stream()
+            .anyMatch(item -> item.getId().equals(horario.getId()));
+        if (!horarioDaOficina) {
+            throw new IllegalArgumentException("O horário informado não pertence à oficina");
+        }
+        validarInscricaoDuplicada(dto);
+        long ocupadas = alunoOficinaRepository.countByHorarioIdAndStatus(
+            horario.getId(), AlunoOficina.StatusInscricao.CONFIRMADO);
+        if (ocupadas >= horario.getVagas()) {
+            throw new IllegalStateException("Não há vagas disponíveis neste horário");
         }
         
         // Criar inscrição
         AlunoOficina aluno = oficinaMapper.toAlunoOficinaEntity(dto);
         AlunoOficina alunoSalvo = alunoOficinaRepository.save(aluno);
-        
-        // Atualizar vagas disponíveis
-        oficina.setVagasDisponiveis(oficina.getVagasDisponiveis() - 1);
-        oficinaRepository.save(oficina);
         
         return oficinaMapper.toAlunoOficinaDTO(alunoSalvo);
     }
@@ -482,15 +496,60 @@ public class OficinaService {
     
     @Transactional
     public AlunoOficinaDTO atualizarInscricao(String id, AlunoOficinaDTO dto) {
-        if (!alunoOficinaRepository.existsById(id)) {
-            throw new EntityNotFoundException("Inscrição não encontrada");
+        AlunoOficina atual = alunoOficinaRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Inscrição não encontrada"));
+        if (!atual.getOficinaId().equals(dto.getOficinaId()) ||
+            !atual.getHorarioId().equals(dto.getHorarioId())) {
+            throw new IllegalArgumentException("Para trocar oficina ou horário, cancele e faça uma nova inscrição");
+        }
+
+        AlunoOficina.StatusInscricao novoStatus = AlunoOficina.StatusInscricao.valueOf(dto.getStatus().toUpperCase());
+        if (atual.getStatus() == AlunoOficina.StatusInscricao.CANCELADO &&
+            novoStatus == AlunoOficina.StatusInscricao.CONFIRMADO) {
+            Horario horario = horarioRepository.findByIdForUpdate(dto.getHorarioId())
+                .orElseThrow(() -> new EntityNotFoundException("Horário não encontrado"));
+            validarInscricaoDuplicada(dto);
+            long ocupadas = alunoOficinaRepository.countByHorarioIdAndStatus(
+                horario.getId(), AlunoOficina.StatusInscricao.CONFIRMADO);
+            if (ocupadas >= horario.getVagas()) {
+                throw new IllegalStateException("Não há vagas disponíveis neste horário");
+            }
         }
         
         dto.setId(id);
+        if (dto.getMatriculaId() == null || dto.getMatriculaId().isBlank()) {
+            dto.setOrigem("avulso");
+            vincularParticipanteAvulso(dto, true);
+        }
         AlunoOficina aluno = oficinaMapper.toAlunoOficinaEntity(dto);
         AlunoOficina alunoSalvo = alunoOficinaRepository.save(aluno);
         
         return oficinaMapper.toAlunoOficinaDTO(alunoSalvo);
+    }
+
+    private void vincularParticipanteAvulso(AlunoOficinaDTO dto, boolean atualizarCadastro) {
+        String participanteId = dto.getParticipanteAvulsoId();
+        if (participanteId == null || participanteId.isBlank()) {
+            participanteId = java.util.UUID.randomUUID().toString();
+            dto.setParticipanteAvulsoId(participanteId);
+        }
+
+        ParticipanteAvulso participante = participanteAvulsoRepository.findById(participanteId)
+            .orElseGet(() -> {
+                ParticipanteAvulso novo = new ParticipanteAvulso();
+                novo.setId(dto.getParticipanteAvulsoId());
+                return novo;
+            });
+
+        if (participante.getDataCriacao() == null || atualizarCadastro) {
+            participante.setNomeCompleto(dto.getNomeCompleto());
+            participante.setIdade(dto.getIdade());
+            participante.setTurno(dto.getTurno());
+            participante.setTelefone(dto.getTelefone());
+            participante.setNomeResponsavel(dto.getNomeResponsavel());
+            participante.setObservacoes(dto.getObservacoes());
+            participanteAvulsoRepository.save(participante);
+        }
     }
     
     @Transactional
@@ -502,11 +561,16 @@ public class OficinaService {
         aluno.setStatus(AlunoOficina.StatusInscricao.CANCELADO);
         alunoOficinaRepository.save(aluno);
         
-        // Liberar vaga na oficina
-        Oficina oficina = oficinaRepository.findById(aluno.getOficinaId())
-            .orElseThrow(() -> new EntityNotFoundException("Oficina não encontrada"));
-        
-        oficina.setVagasDisponiveis(oficina.getVagasDisponiveis() + 1);
-        oficinaRepository.save(oficina);
+    }
+
+    private void validarInscricaoDuplicada(AlunoOficinaDTO dto) {
+        boolean duplicada = dto.getMatriculaId() != null
+            ? alunoOficinaRepository.existsByMatriculaIdAndHorarioIdAndStatusNot(
+                dto.getMatriculaId(), dto.getHorarioId(), AlunoOficina.StatusInscricao.CANCELADO)
+            : alunoOficinaRepository.existsByParticipanteAvulsoIdAndHorarioIdAndStatusNot(
+                dto.getParticipanteAvulsoId(), dto.getHorarioId(), AlunoOficina.StatusInscricao.CANCELADO);
+        if (duplicada) {
+            throw new IllegalStateException("O participante já está inscrito neste horário");
+        }
     }
 }

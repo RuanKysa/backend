@@ -220,9 +220,15 @@ public class OficinaMapper {
         AlunoOficina aluno = new AlunoOficina();
         aluno.setId(dto.getId());
         aluno.setMatriculaId(dto.getMatriculaId());
+        aluno.setParticipanteAvulsoId(dto.getParticipanteAvulsoId());
+        aluno.setOrigem(dto.getOrigem() == null
+            ? (dto.getMatriculaId() == null ? AlunoOficina.OrigemAluno.AVULSO : AlunoOficina.OrigemAluno.MATRICULA)
+            : AlunoOficina.OrigemAluno.valueOf(dto.getOrigem().toUpperCase()));
         aluno.setNomeCompleto(dto.getNomeCompleto());
         aluno.setIdade(dto.getIdade());
         aluno.setTurno(dto.getTurno());
+        aluno.setTelefone(dto.getTelefone());
+        aluno.setNomeResponsavel(dto.getNomeResponsavel());
         aluno.setObservacoes(dto.getObservacoes());
         aluno.setDataInscricao(dto.getDataInscricao());
         aluno.setOficinaId(dto.getOficinaId());
@@ -238,10 +244,15 @@ public class OficinaMapper {
         AlunoOficinaDTO dto = new AlunoOficinaDTO();
         dto.setId(entity.getId());
         dto.setMatriculaId(entity.getMatriculaId());
-        dto.setNomeCompleto(entity.getNomeCompleto());
-        dto.setIdade(entity.getIdade());
-        dto.setTurno(entity.getTurno());
-        dto.setObservacoes(entity.getObservacoes());
+        dto.setParticipanteAvulsoId(entity.getParticipanteAvulsoId());
+        dto.setOrigem(entity.getOrigem() != null ? entity.getOrigem().name().toLowerCase() : "matricula");
+        ParticipanteAvulso avulso = entity.getParticipanteAvulso();
+        dto.setNomeCompleto(avulso != null ? avulso.getNomeCompleto() : entity.getNomeCompleto());
+        dto.setIdade(avulso != null ? avulso.getIdade() : entity.getIdade());
+        dto.setTurno(avulso != null ? avulso.getTurno() : entity.getTurno());
+        dto.setTelefone(avulso != null ? avulso.getTelefone() : entity.getTelefone());
+        dto.setNomeResponsavel(avulso != null ? avulso.getNomeResponsavel() : entity.getNomeResponsavel());
+        dto.setObservacoes(avulso != null ? avulso.getObservacoes() : entity.getObservacoes());
         dto.setDataInscricao(entity.getDataInscricao());
         dto.setOficinaId(entity.getOficinaId());
         dto.setHorarioId(entity.getHorarioId());

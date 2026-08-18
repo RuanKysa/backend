@@ -15,14 +15,18 @@ public class AlunoOficinaDTO {
 
     private String id;
 
-    @NotBlank(message = "ID da matrícula é obrigatório")
     private String matriculaId;
+    private String participanteAvulsoId;
+
+    private String origem;
 
     @NotBlank(message = "Nome completo é obrigatório")
     private String nomeCompleto;
 
     private Integer idade;
     private String turno;
+    private String telefone;
+    private String nomeResponsavel;
     private String observacoes;
 
     @NotNull(message = "Data de inscrição é obrigatória")

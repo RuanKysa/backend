@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "presencas", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"aluno_oficina_id", "data_aula"})
+    @UniqueConstraint(columnNames = {"aluno_oficina_id", "aula_id"})
 })
 @Data
 @NoArgsConstructor
@@ -26,6 +26,12 @@ public class Presenca {
     
     @Column(name = "oficina_id", nullable = false)
     private String oficinaId;
+
+    @Column(name = "horario_id", nullable = false)
+    private String horarioId;
+
+    @Column(name = "aula_id", nullable = false)
+    private String aulaId;
     
     @Column(name = "data_aula", nullable = false)
     private LocalDate dataAula;

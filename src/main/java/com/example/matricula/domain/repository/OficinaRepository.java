@@ -13,6 +13,7 @@ public interface OficinaRepository extends JpaRepository<Oficina, String>, JpaSp
     List<Oficina> findByCategoria(Oficina.CategoriaOficina categoria);
     
     List<Oficina> findByStatus(Oficina.StatusOficina status);
+    long countByStatus(Oficina.StatusOficina status);
     
     List<Oficina> findByResponsavelId(String responsavelId);
     

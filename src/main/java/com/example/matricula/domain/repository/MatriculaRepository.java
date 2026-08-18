@@ -21,6 +21,7 @@ public interface MatriculaRepository extends JpaRepository<Matricula, String> {
     
     // Busca por status
     List<Matricula> findByStatus(StatusMatricula status);
+    long countByStatus(StatusMatricula status);
     
     // Busca por período
     List<Matricula> findByDataCadastroBetween(LocalDateTime dataInicio, LocalDateTime dataFim);

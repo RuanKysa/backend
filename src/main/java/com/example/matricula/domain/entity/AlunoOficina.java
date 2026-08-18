@@ -18,14 +18,25 @@ public class AlunoOficina {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     
-    @Column(nullable = false)
-    private String matriculaId; // Referência à matrícula do aluno
+    private String matriculaId; // Nulo quando o participante for avulso
+    @Column(name = "participante_avulso_id")
+    private String participanteAvulsoId; // Agrupa o mesmo avulso em vários horários
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "participante_avulso_id", insertable = false, updatable = false)
+    private ParticipanteAvulso participanteAvulso;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private OrigemAluno origem = OrigemAluno.MATRICULA;
     
     @Column(nullable = false)
     private String nomeCompleto;
     
     private Integer idade;
     private String turno;
+    private String telefone;
+    private String nomeResponsavel;
     
     @Column(length = 1000)
     private String observacoes;
@@ -48,5 +59,10 @@ public class AlunoOficina {
         CONFIRMADO,
         PENDENTE,
         CANCELADO
+    }
+
+    public enum OrigemAluno {
+        MATRICULA,
+        AVULSO
     }
 }

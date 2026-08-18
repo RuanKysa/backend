@@ -17,6 +17,8 @@ public class HistoricoPresencaDTO {
     private String nomeAluno;
     private String oficinaId;
     private String nomeOficina;
+    private String horarioId;
+    private String aulaId;
     private LocalDate dataAula;
     private Presenca.StatusPresenca status;
     private String observacao;

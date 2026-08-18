@@ -18,4 +18,13 @@ public interface AlunoOficinaRepository extends JpaRepository<AlunoOficina, Stri
     List<AlunoOficina> findByHorarioId(String horarioId);
     
     List<AlunoOficina> findByNomeCompletoContainingIgnoreCase(String nomeCompleto);
+
+    long countByHorarioIdAndStatus(String horarioId, AlunoOficina.StatusInscricao status);
+    long countByStatus(AlunoOficina.StatusInscricao status);
+
+    boolean existsByMatriculaIdAndHorarioIdAndStatusNot(
+        String matriculaId, String horarioId, AlunoOficina.StatusInscricao status);
+
+    boolean existsByParticipanteAvulsoIdAndHorarioIdAndStatusNot(
+        String participanteAvulsoId, String horarioId, AlunoOficina.StatusInscricao status);
 }

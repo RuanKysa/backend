@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ChamadaRequestDTO {
     private LocalDate dataAula;
+    private String horarioId;
     private List<PresencaDTO> presencas;
     private String registradoPor;
 }

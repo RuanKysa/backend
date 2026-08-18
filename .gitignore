@@ -27,6 +27,8 @@ logs/
 log/
 
 # Application
+.env
+.m2/
 application-local.properties
 application-dev.properties
 application-prod.properties

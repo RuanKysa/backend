@@ -3,6 +3,7 @@ package com.example.matricula.application.controller;
 import com.example.matricula.domain.dto.AlunoParaChamadaDTO;
 import com.example.matricula.domain.dto.ChamadaRequestDTO;
 import com.example.matricula.domain.dto.HistoricoPresencaDTO;
+import com.example.matricula.domain.dto.RelatorioFrequenciaDTO;
 import com.example.matricula.domain.entity.Presenca;
 import com.example.matricula.domain.service.ChamadaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,10 +32,11 @@ public class ChamadaController {
                            "Se informar uma data, mostra também o status de presença já registrado (se houver).")
     public ResponseEntity<List<AlunoParaChamadaDTO>> listarAlunosParaChamada(
             @PathVariable String oficinaId,
+            @RequestParam(required = false) String horarioId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
         
         LocalDate dataAula = data != null ? data : LocalDate.now();
-        List<AlunoParaChamadaDTO> alunos = chamadaService.listarAlunosParaChamada(oficinaId, dataAula);
+        List<AlunoParaChamadaDTO> alunos = chamadaService.listarAlunosParaChamada(oficinaId, horarioId, dataAula);
         return ResponseEntity.ok(alunos);
     }
     
@@ -54,9 +56,10 @@ public class ChamadaController {
     @Operation(summary = "Histórico de chamadas da oficina", 
                description = "Retorna o histórico completo de presença de todos os alunos de uma oficina")
     public ResponseEntity<List<HistoricoPresencaDTO>> buscarHistoricoOficina(
-            @PathVariable String oficinaId) {
+            @PathVariable String oficinaId,
+            @RequestParam(required = false) String horarioId) {
         
-        List<HistoricoPresencaDTO> historico = chamadaService.buscarHistoricoOficina(oficinaId);
+        List<HistoricoPresencaDTO> historico = chamadaService.buscarHistoricoOficina(oficinaId, horarioId);
         return ResponseEntity.ok(historico);
     }
     
@@ -78,5 +81,16 @@ public class ChamadaController {
         
         Map<String, Long> estatisticas = chamadaService.buscarEstatisticasAluno(alunoOficinaId);
         return ResponseEntity.ok(estatisticas);
+    }
+
+    @GetMapping("/oficinas/{oficinaId}/relatorio")
+    @Operation(summary = "Relatório de frequência por horário")
+    public ResponseEntity<List<RelatorioFrequenciaDTO>> gerarRelatorio(
+            @PathVariable String oficinaId,
+            @RequestParam String horarioId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fim) {
+        return ResponseEntity.ok(chamadaService.gerarRelatorioFrequencia(
+            oficinaId, horarioId, inicio, fim));
     }
 }

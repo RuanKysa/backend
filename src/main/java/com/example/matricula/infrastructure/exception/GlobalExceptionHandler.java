@@ -7,6 +7,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -51,6 +53,21 @@ public class GlobalExceptionHandler {
             LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler({IllegalStateException.class, DataIntegrityViolationException.class})
+    public ResponseEntity<ErrorResponse> handleConflict(Exception ex) {
+        String mensagem = ex instanceof DataIntegrityViolationException
+            ? "O registro conflita com outro cadastro existente"
+            : ex.getMessage();
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(
+            HttpStatus.CONFLICT.value(), mensagem, LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode()).body(new ErrorResponse(
+            ex.getStatusCode().value(), ex.getReason(), LocalDateTime.now()));
     }
     
     @ExceptionHandler(Exception.class)

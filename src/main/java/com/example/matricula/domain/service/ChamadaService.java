@@ -4,9 +4,11 @@ import com.example.matricula.domain.dto.*;
 import com.example.matricula.domain.entity.AlunoOficina;
 import com.example.matricula.domain.entity.Oficina;
 import com.example.matricula.domain.entity.Presenca;
+import com.example.matricula.domain.entity.Aula;
 import com.example.matricula.domain.repository.AlunoOficinaRepository;
 import com.example.matricula.domain.repository.OficinaRepository;
 import com.example.matricula.domain.repository.PresencaRepository;
+import com.example.matricula.domain.repository.AulaRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,11 +26,14 @@ public class ChamadaService {
     private final PresencaRepository presencaRepository;
     private final AlunoOficinaRepository alunoOficinaRepository;
     private final OficinaRepository oficinaRepository;
+    private final AulaRepository aulaRepository;
     
     /**
      * Lista todos os alunos de uma oficina para fazer a chamada
      */
-    public List<AlunoParaChamadaDTO> listarAlunosParaChamada(String oficinaId, LocalDate dataAula) {
+    @Transactional
+    public List<AlunoParaChamadaDTO> listarAlunosParaChamada(
+            String oficinaId, String horarioId, LocalDate dataAula) {
         // Verifica se a oficina existe
         Oficina oficina = oficinaRepository.findById(oficinaId)
             .orElseThrow(() -> new RuntimeException("Oficina não encontrada"));
@@ -38,6 +43,12 @@ public class ChamadaService {
             oficinaId, 
             AlunoOficina.StatusInscricao.CONFIRMADO
         );
+
+        if (horarioId != null && !horarioId.isBlank()) {
+            alunos = alunos.stream()
+                .filter(aluno -> horarioId.equals(aluno.getHorarioId()))
+                .collect(Collectors.toList());
+        }
         
         // Busca presenças já registradas para esta data (se houver)
         Map<String, Presenca> presencasMap = presencaRepository
@@ -49,9 +60,9 @@ public class ChamadaService {
         return alunos.stream().map(aluno -> {
             AlunoParaChamadaDTO dto = new AlunoParaChamadaDTO();
             dto.setAlunoOficinaId(aluno.getId());
-            dto.setNomeCompleto(aluno.getNomeCompleto());
-            dto.setIdade(aluno.getIdade());
-            dto.setTurno(aluno.getTurno());
+            dto.setNomeCompleto(nomeDoAluno(aluno));
+            dto.setIdade(aluno.getParticipanteAvulso() != null ? aluno.getParticipanteAvulso().getIdade() : aluno.getIdade());
+            dto.setTurno(aluno.getParticipanteAvulso() != null ? aluno.getParticipanteAvulso().getTurno() : aluno.getTurno());
             
             // Se já houver presença registrada, inclui o status
             if (presencasMap.containsKey(aluno.getId())) {
@@ -71,6 +82,23 @@ public class ChamadaService {
         Oficina oficina = oficinaRepository.findById(oficinaId)
             .orElseThrow(() -> new RuntimeException("Oficina não encontrada"));
         
+        if (request.getDataAula() == null) {
+            throw new IllegalArgumentException("A data da aula é obrigatória");
+        }
+        if (request.getHorarioId() == null || request.getHorarioId().isBlank()) {
+            throw new IllegalArgumentException("O horário da chamada é obrigatório");
+        }
+        Aula aula = aulaRepository.findByOficinaIdAndHorarioIdAndDataAula(
+            oficinaId, request.getHorarioId(), request.getDataAula())
+            .orElseGet(() -> {
+                Aula nova = new Aula();
+                nova.setOficinaId(oficinaId);
+                nova.setHorarioId(request.getHorarioId());
+                nova.setDataAula(request.getDataAula());
+                nova.setCriadoPor(request.getRegistradoPor());
+                return aulaRepository.save(nova);
+            });
+
         List<Presenca> presencasRegistradas = new ArrayList<>();
         
         for (PresencaDTO presencaDTO : request.getPresencas()) {
@@ -81,15 +109,25 @@ public class ChamadaService {
             if (!aluno.getOficinaId().equals(oficinaId)) {
                 throw new RuntimeException("Aluno não pertence a esta oficina");
             }
+
+            if (request.getHorarioId() == null || request.getHorarioId().isBlank()) {
+                throw new RuntimeException("Horário da chamada é obrigatório");
+            }
+
+            if (!request.getHorarioId().equals(aluno.getHorarioId())) {
+                throw new RuntimeException("Aluno não pertence ao horário selecionado");
+            }
             
             // Verifica se já existe registro de presença para este aluno nesta data
             Presenca presenca = presencaRepository
-                .findByAlunoOficinaIdAndDataAula(presencaDTO.getAlunoOficinaId(), request.getDataAula())
+                .findByAlunoOficinaIdAndAulaId(presencaDTO.getAlunoOficinaId(), aula.getId())
                 .orElse(new Presenca());
             
             // Atualiza ou cria o registro
             presenca.setAlunoOficinaId(presencaDTO.getAlunoOficinaId());
             presenca.setOficinaId(oficinaId);
+            presenca.setHorarioId(request.getHorarioId());
+            presenca.setAulaId(aula.getId());
             presenca.setDataAula(request.getDataAula());
             presenca.setStatus(presencaDTO.getStatus());
             presenca.setObservacao(presencaDTO.getObservacao());
@@ -104,11 +142,14 @@ public class ChamadaService {
     /**
      * Busca o histórico de presença de uma oficina
      */
-    public List<HistoricoPresencaDTO> buscarHistoricoOficina(String oficinaId) {
+    @Transactional
+    public List<HistoricoPresencaDTO> buscarHistoricoOficina(String oficinaId, String horarioId) {
         Oficina oficina = oficinaRepository.findById(oficinaId)
             .orElseThrow(() -> new RuntimeException("Oficina não encontrada"));
         
-        List<Presenca> presencas = presencaRepository.findByOficinaIdOrderByDataAulaDesc(oficinaId);
+        List<Presenca> presencas = horarioId == null || horarioId.isBlank()
+            ? presencaRepository.findByOficinaIdOrderByDataAulaDesc(oficinaId)
+            : presencaRepository.findByOficinaIdAndHorarioIdOrderByDataAulaDesc(oficinaId, horarioId);
         
         return presencas.stream().map(presenca -> {
             HistoricoPresencaDTO dto = new HistoricoPresencaDTO();
@@ -116,6 +157,8 @@ public class ChamadaService {
             dto.setAlunoOficinaId(presenca.getAlunoOficinaId());
             dto.setOficinaId(presenca.getOficinaId());
             dto.setNomeOficina(oficina.getNome());
+            dto.setHorarioId(presenca.getHorarioId());
+            dto.setAulaId(presenca.getAulaId());
             dto.setDataAula(presenca.getDataAula());
             dto.setStatus(presenca.getStatus());
             dto.setObservacao(presenca.getObservacao());
@@ -124,7 +167,7 @@ public class ChamadaService {
             
             // Busca nome do aluno
             alunoOficinaRepository.findById(presenca.getAlunoOficinaId())
-                .ifPresent(aluno -> dto.setNomeAluno(aluno.getNomeCompleto()));
+                .ifPresent(aluno -> dto.setNomeAluno(nomeDoAluno(aluno)));
             
             return dto;
         }).collect(Collectors.toList());
@@ -133,6 +176,7 @@ public class ChamadaService {
     /**
      * Busca o histórico de presença de um aluno específico
      */
+    @Transactional
     public List<HistoricoPresencaDTO> buscarHistoricoAluno(String alunoOficinaId) {
         AlunoOficina aluno = alunoOficinaRepository.findById(alunoOficinaId)
             .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
@@ -143,8 +187,10 @@ public class ChamadaService {
             HistoricoPresencaDTO dto = new HistoricoPresencaDTO();
             dto.setId(presenca.getId());
             dto.setAlunoOficinaId(presenca.getAlunoOficinaId());
-            dto.setNomeAluno(aluno.getNomeCompleto());
+            dto.setNomeAluno(nomeDoAluno(aluno));
             dto.setOficinaId(presenca.getOficinaId());
+            dto.setHorarioId(presenca.getHorarioId());
+            dto.setAulaId(presenca.getAulaId());
             dto.setDataAula(presenca.getDataAula());
             dto.setStatus(presenca.getStatus());
             dto.setObservacao(presenca.getObservacao());
@@ -171,5 +217,36 @@ public class ChamadaService {
             "faltas", faltas,
             "total", presencas + faltas
         );
+    }
+
+    @Transactional
+    public List<RelatorioFrequenciaDTO> gerarRelatorioFrequencia(
+            String oficinaId, String horarioId, LocalDate inicio, LocalDate fim) {
+        if (horarioId == null || horarioId.isBlank()) {
+            throw new IllegalArgumentException("O horário é obrigatório para gerar o relatório");
+        }
+        List<Presenca> registros = presencaRepository
+            .findByOficinaIdAndHorarioIdAndDataAulaBetweenOrderByDataAulaDesc(
+                oficinaId, horarioId, inicio, fim);
+
+        return registros.stream().collect(Collectors.groupingBy(Presenca::getAlunoOficinaId))
+            .entrySet().stream().map(entry -> {
+                List<Presenca> itens = entry.getValue();
+                long presentes = itens.stream().filter(p -> p.getStatus() == Presenca.StatusPresenca.PRESENTE).count();
+                long faltas = itens.stream().filter(p -> p.getStatus() == Presenca.StatusPresenca.FALTA).count();
+                long justificadas = itens.stream().filter(p -> p.getStatus() == Presenca.StatusPresenca.JUSTIFICADA).count();
+                String nome = alunoOficinaRepository.findById(entry.getKey())
+                    .map(this::nomeDoAluno).orElse("Participante removido");
+                double percentual = itens.isEmpty() ? 0 : (presentes * 100.0 / itens.size());
+                return new RelatorioFrequenciaDTO(entry.getKey(), nome, itens.size(),
+                    presentes, faltas, justificadas, Math.round(percentual * 10.0) / 10.0);
+            }).sorted(java.util.Comparator.comparing(RelatorioFrequenciaDTO::getNomeAluno))
+            .collect(Collectors.toList());
+    }
+
+    private String nomeDoAluno(AlunoOficina aluno) {
+        return aluno.getParticipanteAvulso() != null
+            ? aluno.getParticipanteAvulso().getNomeCompleto()
+            : aluno.getNomeCompleto();
     }
 }

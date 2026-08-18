@@ -13,8 +13,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 COMMENT ON DATABASE matricula_db IS 'Banco de dados para o sistema de matrículas';
 
--- A estrutura das tabelas será criada automaticamente pelo Hibernate (spring.jpa.hibernate.ddl-auto=update)
--- Este script é apenas para referência e inicialização do banco de dados
+-- A estrutura e as alterações são gerenciadas pelo Flyway.
+-- Consulte src/main/resources/db/migration e não adicione tabelas manualmente aqui.
 
 -- Índices adicionais para melhorar performance de consultas
 
