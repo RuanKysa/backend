@@ -10,6 +10,17 @@ CREATE TABLE IF NOT EXISTS participantes_avulsos (
     data_atualizacao timestamp
 );
 
+-- Compatibilidade com instalacoes antigas, nas quais alunos_oficina tinha
+-- somente os dados da matricula e da oficina. As colunas permanecem
+-- opcionais porque inscricoes vinculadas a matriculas nao precisam duplicar
+-- os dados pessoais.
+ALTER TABLE alunos_oficina ADD COLUMN IF NOT EXISTS nome_completo varchar(255);
+ALTER TABLE alunos_oficina ADD COLUMN IF NOT EXISTS idade integer;
+ALTER TABLE alunos_oficina ADD COLUMN IF NOT EXISTS turno varchar(255);
+ALTER TABLE alunos_oficina ADD COLUMN IF NOT EXISTS telefone varchar(255);
+ALTER TABLE alunos_oficina ADD COLUMN IF NOT EXISTS nome_responsavel varchar(255);
+ALTER TABLE alunos_oficina ADD COLUMN IF NOT EXISTS observacoes varchar(1000);
+
 UPDATE alunos_oficina
 SET participante_avulso_id = gen_random_uuid()::text
 WHERE origem = 'AVULSO' AND participante_avulso_id IS NULL;
