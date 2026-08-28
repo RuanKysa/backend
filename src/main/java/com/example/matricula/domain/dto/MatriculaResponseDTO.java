@@ -47,7 +47,9 @@ public class MatriculaResponseDTO {
     private String etnia;
     
     // PROGRAMAS SOCIAIS
+    private List<String> programasSociais = new ArrayList<>();
     private String programaSocial;
+    private String programaSocialOutros;
     private Integer quantasPessoasResidencia;
     
     // FILIAÇÃO

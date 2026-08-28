@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -52,7 +54,8 @@ public class MatriculaMapper {
         matricula.setEtnia(parseEnum(Matricula.Etnia.class, dto.getEtnia()));
         
         // PROGRAMAS SOCIAIS
-        matricula.setProgramaSocial(parseEnum(Matricula.ProgramaSocial.class, dto.getProgramaSocial()));
+        matricula.setProgramasSociais(parseProgramasSociais(dto.getProgramasSociais(), dto.getProgramaSocial()));
+        matricula.setProgramaSocialOutros(dto.getProgramaSocialOutros());
         matricula.setQuantasPessoasResidencia(dto.getQuantasPessoasResidencia());
         
         // FILIAÇÃO
@@ -157,7 +160,9 @@ public class MatriculaMapper {
         dto.setEtnia(enumToString(entity.getEtnia()));
         
         // PROGRAMAS SOCIAIS
-        dto.setProgramaSocial(enumToString(entity.getProgramaSocial()));
+        dto.setProgramasSociais(entity.getProgramasSociais().stream().map(this::enumToString).toList());
+        dto.setProgramaSocial(dto.getProgramasSociais().stream().findFirst().orElse(null));
+        dto.setProgramaSocialOutros(entity.getProgramaSocialOutros());
         dto.setQuantasPessoasResidencia(entity.getQuantasPessoasResidencia());
         
         // FILIAÇÃO
@@ -295,9 +300,10 @@ public class MatriculaMapper {
             entity.setEtnia(parseEnum(Matricula.Etnia.class, dto.getEtnia()));
         }
         
-        if (dto.getProgramaSocial() != null) {
-            entity.setProgramaSocial(parseEnum(Matricula.ProgramaSocial.class, dto.getProgramaSocial()));
+        if (dto.getProgramasSociais() != null || dto.getProgramaSocial() != null) {
+            entity.setProgramasSociais(parseProgramasSociais(dto.getProgramasSociais(), dto.getProgramaSocial()));
         }
+        entity.setProgramaSocialOutros(dto.getProgramaSocialOutros());
         
         entity.setQuantasPessoasResidencia(dto.getQuantasPessoasResidencia());
         entity.setNomeMae(dto.getNomeMae());
@@ -392,5 +398,23 @@ public class MatriculaMapper {
     
     private String enumToString(Enum<?> enumValue) {
         return enumValue != null ? enumValue.name().toLowerCase() : null;
+    }
+
+    private LinkedHashSet<Matricula.ProgramaSocial> parseProgramasSociais(List<String> valores, String valorLegado) {
+        LinkedHashSet<Matricula.ProgramaSocial> programas = new LinkedHashSet<>();
+        if (valores != null) {
+            valores.stream()
+                .map(valor -> parseEnum(Matricula.ProgramaSocial.class, valor))
+                .filter(java.util.Objects::nonNull)
+                .forEach(programas::add);
+        }
+        if (programas.isEmpty()) {
+            Matricula.ProgramaSocial legado = parseEnum(Matricula.ProgramaSocial.class, valorLegado);
+            programas.add(legado != null ? legado : Matricula.ProgramaSocial.NAO_POSSUI);
+        }
+        if (programas.size() > 1) {
+            programas.remove(Matricula.ProgramaSocial.NAO_POSSUI);
+        }
+        return programas;
     }
 }

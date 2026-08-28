@@ -35,12 +35,14 @@ public class MatriculaRequestDTO {
     private String pais;
     
     // DOCUMENTOS
+    @NotBlank(message = "RG é obrigatório")
     private String rg;
     private String rgUF;
     
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dataExpedicao;
     
+    @NotBlank(message = "CPF é obrigatório")
     @Pattern(regexp = "^\\d{11}$|^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$", message = "CPF inválido")
     private String cpf;
     
@@ -52,7 +54,9 @@ public class MatriculaRequestDTO {
     private String etnia; // branca, negra, parda, amarela, indigena, nao_informar
     
     // PROGRAMAS SOCIAIS
-    private String programaSocial; // nao_possui, bolsa_familia, bpc, tarifa_social
+    private List<String> programasSociais = new ArrayList<>();
+    private String programaSocial; // Compatibilidade com clientes antigos
+    private String programaSocialOutros;
     
     @Min(value = 1, message = "Número de pessoas na residência deve ser no mínimo 1")
     private Integer quantasPessoasResidencia;
@@ -70,13 +74,17 @@ public class MatriculaRequestDTO {
     private String parentesco;
     
     // ENDEREÇO
+    @NotBlank(message = "Endereço é obrigatório")
     private String endereco;
+    @NotBlank(message = "Número do endereço é obrigatório")
     private String numeroEndereco;
     private String complemento;
+    @NotBlank(message = "Bairro é obrigatório")
     private String bairro;
     private String postoDeSaude;
     
     // CONTATO
+    @NotBlank(message = "Telefone é obrigatório")
     @Pattern(regexp = "^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$", message = "Telefone inválido")
     private String telefone;
     

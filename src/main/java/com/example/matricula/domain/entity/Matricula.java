@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "matriculas")
@@ -53,8 +55,13 @@ public class Matricula {
     private Etnia etnia;
     
     // PROGRAMAS SOCIAIS
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "matricula_programas_sociais", joinColumns = @JoinColumn(name = "matricula_id"))
+    @Column(name = "programa_social", nullable = false)
     @Enumerated(EnumType.STRING)
-    private ProgramaSocial programaSocial;
+    private Set<ProgramaSocial> programasSociais = new LinkedHashSet<>();
+
+    private String programaSocialOutros;
     
     private Integer quantasPessoasResidencia;
     
@@ -153,7 +160,7 @@ public class Matricula {
     }
     
     public enum ProgramaSocial {
-        NAO_POSSUI, BOLSA_FAMILIA, BPC, TARIFA_SOCIAL
+        NAO_POSSUI, BOLSA_FAMILIA, BPC, TARIFA_SOCIAL, AUXILIO_GAS, PETI, RENDA_CIDADA, CESTA_BASICA, OUTROS
     }
     
     public enum TurnoEscola {

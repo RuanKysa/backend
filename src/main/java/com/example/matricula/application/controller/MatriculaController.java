@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -271,6 +272,17 @@ public class MatriculaController {
     /**
      * Exception handler para validações
      */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationException(MethodArgumentNotValidException e) {
+        Map<String, String> error = new HashMap<>();
+        String mensagem = e.getBindingResult().getFieldErrors().stream()
+            .map(fieldError -> fieldError.getDefaultMessage())
+            .findFirst()
+            .orElse("Dados da matrícula inválidos");
+        error.put("erro", mensagem);
+        return ResponseEntity.badRequest().body(error);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleException(Exception e) {
         Map<String, String> error = new HashMap<>();
