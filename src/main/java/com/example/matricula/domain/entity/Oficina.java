@@ -27,9 +27,8 @@ public class Oficina {
     @Column(length = 2000)
     private String descricao;
     
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CategoriaOficina categoria;
+    private String categoria;
     
     // Responsável
     @ManyToOne
@@ -93,17 +92,6 @@ public class Oficina {
     @PreUpdate
     protected void onUpdate() {
         dataAtualizacao = LocalDateTime.now();
-    }
-    
-    public enum CategoriaOficina {
-        ESPORTE,
-        ARTE,
-        MUSICA,
-        DANCA,
-        ARTESANATO,
-        INFORMATICA,
-        IDIOMAS,
-        OUTRAS
     }
     
     public enum StatusOficina {

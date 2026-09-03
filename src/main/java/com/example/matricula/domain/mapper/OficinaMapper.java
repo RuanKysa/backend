@@ -19,7 +19,7 @@ public class OficinaMapper {
         Oficina oficina = new Oficina();
         oficina.setNome(dto.getNome());
         oficina.setDescricao(dto.getDescricao());
-        oficina.setCategoria(parseCategoriaOficina(dto.getCategoria()));
+        oficina.setCategoria(normalizarCategoria(dto.getCategoria()));
         oficina.setIdadeMinima(dto.getIdadeMinima());
         oficina.setIdadeMaxima(dto.getIdadeMaxima());
         oficina.setVagasTotais(dto.getVagasTotais());
@@ -50,7 +50,7 @@ public class OficinaMapper {
         dto.setId(entity.getId());
         dto.setNome(entity.getNome());
         dto.setDescricao(entity.getDescricao());
-        dto.setCategoria(entity.getCategoria() != null ? entity.getCategoria().name().toLowerCase() : null);
+        dto.setCategoria(normalizarCategoriaSaida(entity.getCategoria()));
         dto.setResponsavel(toResponsavelDTO(entity.getResponsavel()));
         dto.setResponsavelId(entity.getResponsavel() != null ? entity.getResponsavel().getId() : null);
         dto.setIdadeMinima(entity.getIdadeMinima());
@@ -83,7 +83,7 @@ public class OficinaMapper {
         
         entity.setNome(dto.getNome());
         entity.setDescricao(dto.getDescricao());
-        entity.setCategoria(parseCategoriaOficina(dto.getCategoria()));
+        entity.setCategoria(normalizarCategoria(dto.getCategoria()));
         entity.setIdadeMinima(dto.getIdadeMinima());
         entity.setIdadeMaxima(dto.getIdadeMaxima());
         entity.setVagasTotais(dto.getVagasTotais());
@@ -263,13 +263,22 @@ public class OficinaMapper {
     
     // ========== PARSERS ==========
     
-    private Oficina.CategoriaOficina parseCategoriaOficina(String categoria) {
+    private String normalizarCategoria(String categoria) {
         if (categoria == null) return null;
-        try {
-            return Oficina.CategoriaOficina.valueOf(categoria.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Categoria inválida: " + categoria);
+        String categoriaTratada = categoria.trim();
+        if (categoriaTratada.isEmpty()) {
+            throw new IllegalArgumentException("Categoria é obrigatória");
         }
+        return categoriaTratada;
+    }
+
+    private String normalizarCategoriaSaida(String categoria) {
+        if (categoria == null) return null;
+        return switch (categoria.toUpperCase()) {
+            case "ESPORTE", "ARTE", "MUSICA", "DANCA", "ARTESANATO", "INFORMATICA", "IDIOMAS", "ARTES_MARCIAIS", "OUTRAS" ->
+                categoria.toLowerCase();
+            default -> categoria;
+        };
     }
     
     private Oficina.StatusOficina parseStatusOficina(String status) {

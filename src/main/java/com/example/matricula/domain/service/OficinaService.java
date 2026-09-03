@@ -106,11 +106,10 @@ public class OficinaService {
             
             // Filtrar por categoria
             if (filtros.getCategoria() != null && !filtros.getCategoria().isEmpty()) {
-                try {
-                    Oficina.CategoriaOficina categoria = Oficina.CategoriaOficina.valueOf(filtros.getCategoria().toUpperCase());
-                    predicates.add(cb.equal(root.get("categoria"), categoria));
-                } catch (IllegalArgumentException ignored) {
-                }
+                predicates.add(cb.equal(
+                    cb.lower(root.get("categoria")),
+                    filtros.getCategoria().trim().toLowerCase()
+                ));
             }
             
             // Filtrar por status

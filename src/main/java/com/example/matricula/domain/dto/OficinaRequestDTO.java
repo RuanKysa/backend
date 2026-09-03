@@ -24,7 +24,7 @@ public class OficinaRequestDTO {
     private String descricao;
     
     @NotNull(message = "Categoria é obrigatória")
-    private String categoria; // esporte, arte, musica, danca, artesanato, informatica, idiomas, outras
+    private String categoria; // Categoria predefinida ou texto personalizado
     
     // Responsável
     private String responsavelId;

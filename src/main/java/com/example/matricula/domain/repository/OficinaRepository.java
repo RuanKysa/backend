@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface OficinaRepository extends JpaRepository<Oficina, String>, JpaSpecificationExecutor<Oficina> {
     
-    List<Oficina> findByCategoria(Oficina.CategoriaOficina categoria);
+    List<Oficina> findByCategoriaIgnoreCase(String categoria);
     
     List<Oficina> findByStatus(Oficina.StatusOficina status);
     long countByStatus(Oficina.StatusOficina status);
